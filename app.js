@@ -42,12 +42,7 @@ app.get("/blogs", (req, res) => {
 
 app.get("/blogs/new", (req, res) => {
 	res.render("form");
-	res.redirect("/blogs");
 });
-
-/*app.create("/blogs", (req, res) => {
-	res.send("Operational");
-});*/
 
 app.listen(process.env.PORT || 3000, process.env.IP, () => {
 		   console.log("Server initialized.");
