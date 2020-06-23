@@ -1,16 +1,19 @@
 <%- include("partials/header") %>
 
 <% blogs.forEach(function(blog) { %>
-	<div>
-		<h2>
+	<div class="ui main text container segment">
+		<h2 class="ui centered huge header">
 			<%= blog.title %>
 		</h2>
-		<img src= '<%= blog.image %>'>
+		<img class="ui centered rounded image" src= '<%= blog.image %>'>
 		<p>
-			<%= blog.body %>
-		</p>
+			<%- blog.body.substring(0, 100) %> --(Click to read more) <!--cut text-->
+			<p>
+				<a class="ui secondary button" href= 'blogs/<%= blog._id %>' >Read More</a>
+				<a class="ui orange inverted button" href="/blogs/<%= blog._id %>/edit">Edit Blog</a>
+			</p>
 		<p>
-			<%= blog.created %>
+			<%= blog.created.toDateString() %>
 		</p>
 	</div>
 <% }); %>

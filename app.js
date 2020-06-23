@@ -2,12 +2,16 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const methodOverride = require("method-override");
+const expressSanitizer = require("express-sanitizer");
 
 //AP CONFIG
 mongoose.connect("mongodb://localhost:27017/blog_app", {useNewUrlParser: true, useUnifiedTopology: true}); //part after localhost is your database name
 app.set("view engine", "ejs");
 app.use(express.static("public")); //for using custom stylesheets
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
+app.use(expressSanitizer()); //must come after bodyParser
 
 //MONGOOSE/MODEL CONFIG
 let blogSchema = new mongoose.Schema({
@@ -26,9 +30,22 @@ let Blog = mongoose.model("Blog", blogSchema);
 });*/
 
 //ROUTES
+
+app.post("/blogs", (req, res) => {
+	req.body.blog.body = req.sanitize(req.body.blog.body);
+	Blog.create(req.body.blog, (err, newBlog) => {
+		if(err) {
+			res.render("form");
+		} else {
+			res.redirect("/blogs");
+		};
+	});
+});
+
 app.get("/", (req, res) => {
 	res.redirect("/blogs");
 });
+	
 
 app.get("/blogs", (req, res) => {
 	Blog.find({}, (err, blogs) => { //from the database
@@ -42,6 +59,47 @@ app.get("/blogs", (req, res) => {
 
 app.get("/blogs/new", (req, res) => {
 	res.render("form");
+});
+
+app.get("/blogs/:id/edit", (req, res) => {
+	Blog.findById(req.params.id, (err, foundBlog) => {
+		if(err) {
+			res.redirect("/blogs/:id/edit");
+		} else {
+			res.render("edit", {blog: foundBlog});
+		};
+	});
+});
+
+app.put("/blogs/:id", (req, res) => {
+	req.body.blog.body = req.sanitize(req.body.blog.body);
+	Blog.findByIdAndUpdate(req.params.id, req.body.blog, (err, updatedBlog) => {
+		if(err) {
+			res.redirect("/blogs");
+		} else {
+			res.redirect("/blogs/" + req.params.id);
+		};
+	});
+});
+
+app.delete("/blogs/:id", (req, res) => {
+	Blog.findByIdAndRemove(req.params.id, (err) => {
+		if(err) {
+			res.redirect("/blogs");
+		} else {
+			res.redirect("/blogs");
+		};
+	});
+});
+
+app.get("/blogs/:id", (req, res) => {
+	Blog.findById(req.params.id, (err, foundBlog) => {
+		if(err) {
+			res.send("ERROR");
+		} else {
+			res.render("show", {blog: foundBlog});
+		};
+	});
 });
 
 app.listen(process.env.PORT || 3000, process.env.IP, () => {
